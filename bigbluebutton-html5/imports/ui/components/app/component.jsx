@@ -99,6 +99,7 @@ class App extends Component {
     super();
     this.state = {
       enableResize: !window.matchMedia(MOBILE_MEDIA).matches,
+      hover : false,
     };
 
     this.handleWindowResize = throttle(this.handleWindowResize).bind(this);
@@ -277,6 +278,18 @@ class App extends Component {
     );
   }
 
+  toggleHover(val) {
+    this.setState({
+      hover : val
+    });
+    console.log(this.state.hover);
+    if(val) {
+      styles.actionsbar = {display : 'none'}
+    }else {
+      styles.actionsbar = {display : 'block'}
+    }
+  }
+
   renderActionsBar() {
     const {
       actionsbar,
@@ -286,7 +299,7 @@ class App extends Component {
     if (!actionsbar) return null;
 
     return (
-      <section
+      <section onMouseEnter={this.toggleHover(true)} onMouseLeave={this.toggleHover(false)}
         className={styles.actionsbar}
         aria-label={intl.formatMessage(intlMessages.actionsBarLabel)}
         aria-hidden={this.shouldAriaHide()}
