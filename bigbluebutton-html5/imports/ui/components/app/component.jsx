@@ -104,6 +104,7 @@ class App extends Component {
 
     this.handleWindowResize = throttle(this.handleWindowResize).bind(this);
     this.shouldAriaHide = this.shouldAriaHide.bind(this);
+    this.toggleHover = this.toggleHover.bind(this);
   }
 
   componentDidMount() {
