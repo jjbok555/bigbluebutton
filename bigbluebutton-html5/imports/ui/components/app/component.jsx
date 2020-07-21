@@ -99,13 +99,13 @@ class App extends Component {
     super();
     this.state = {
       enableResize: !window.matchMedia(MOBILE_MEDIA).matches,
-      hoverIsTrue: false,
+      //hoverIsTrue: false,
     };
 
     this.handleWindowResize = throttle(this.handleWindowResize).bind(this);
     this.shouldAriaHide = this.shouldAriaHide.bind(this);
-    this.toggleHover = this.toggleHover.bind(this);
-    this.toggleDefault = this.toggleDefault.bind(this);
+    // this.toggleHover = this.toggleHover.bind(this);
+    // this.toggleDefault = this.toggleDefault.bind(this);
   }
 
   componentDidMount() {
@@ -280,7 +280,7 @@ class App extends Component {
     );
   }
 
-  toggleHover() {
+  /*toggleHover() {
     this.setState({
       hoverIsTrue : true
     });
@@ -293,7 +293,7 @@ class App extends Component {
     });
     console.log(this.state.hoverIsTrue);
     styles.actionsbar = {display : 'none'}
-  }
+  }*/
 
   renderActionsBar() {
     const {
@@ -304,7 +304,7 @@ class App extends Component {
     if (!actionsbar) return null;
 
     return (
-      <section onMouseEnter={this.toggleHover} onMouseLeave={this.toggleDefault}
+      <section /*onMouseEnter={this.toggleHover} onMouseLeave={this.toggleDefault}*/
         className={styles.actionsbar}
         aria-label={intl.formatMessage(intlMessages.actionsBarLabel)}
         aria-hidden={this.shouldAriaHide()}
