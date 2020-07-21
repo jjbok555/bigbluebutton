@@ -99,12 +99,13 @@ class App extends Component {
     super();
     this.state = {
       enableResize: !window.matchMedia(MOBILE_MEDIA).matches,
-      hover : false,
+      hoverIsTrue: false,
     };
 
     this.handleWindowResize = throttle(this.handleWindowResize).bind(this);
     this.shouldAriaHide = this.shouldAriaHide.bind(this);
     this.toggleHover = this.toggleHover.bind(this);
+    this.toggleDefault = this.toggleDefault.bind(this);
   }
 
   componentDidMount() {
@@ -279,16 +280,19 @@ class App extends Component {
     );
   }
 
-  toggleHover(val) {
+  toggleHover() {
     this.setState({
-      hover : val
+      hoverIsTrue : true
     });
-    console.log(this.state.hover);
-    if(val) {
-      styles.actionsbar = {display : 'none'}
-    }else {
-      styles.actionsbar = {display : 'block'}
-    }
+    console.log(this.state.hoverIsTrue);
+    styles.actionsbar = {display : 'block'}
+  }
+  toggleDefault() {
+    this.setState({
+      hoverIsTrue : false
+    });
+    console.log(this.state.hoverIsTrue);
+    styles.actionsbar = {display : 'none'}
   }
 
   renderActionsBar() {
@@ -300,7 +304,7 @@ class App extends Component {
     if (!actionsbar) return null;
 
     return (
-      <section onMouseEnter={this.toggleHover(true)} onMouseLeave={this.toggleHover(false)}
+      <section onMouseEnter={this.toggleHover} onMouseLeave={this.toggleDefault}
         className={styles.actionsbar}
         aria-label={intl.formatMessage(intlMessages.actionsBarLabel)}
         aria-hidden={this.shouldAriaHide()}
