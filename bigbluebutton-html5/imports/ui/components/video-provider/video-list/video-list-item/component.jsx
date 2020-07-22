@@ -221,7 +221,7 @@ class VideoListItem extends Component {
             autoPlay
             playsInline
           />
-          {videoIsReady && this.renderFullscreenButton()}
+          {/*{videoIsReady && this.renderFullscreenButton()}*/}
         </div>
         <div className={styles.info}>
           {enableVideoMenu && availableActions.length >= 3
@@ -253,8 +253,8 @@ class VideoListItem extends Component {
               </div>
             )
           }
-          {voiceUser.muted && !voiceUser.listenOnly ? <Icon className={styles.muted} iconName="unmute_filled" /> : null}
-          {voiceUser.listenOnly ? <Icon className={styles.voice} iconName="listen" /> : null}
+          {/*{voiceUser.muted && !voiceUser.listenOnly ? <Icon className={styles.muted} iconName="unmute_filled" /> : null}
+          {voiceUser.listenOnly ? <Icon className={styles.voice} iconName="listen" /> : null}*/}
         </div>
         {
           showStats

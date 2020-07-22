@@ -308,7 +308,7 @@ class App extends Component {
         aria-hidden={this.shouldAriaHide()}
       >
         {
-          this.state.hoverIsTrue? {actionsbar} : false
+          this.state.hoverIsTrue? actionsbar : null
         }
       </section>
     );
