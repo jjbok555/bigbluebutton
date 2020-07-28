@@ -25,6 +25,7 @@ import App from './component';
 import NavBarContainer from '../nav-bar/container';
 import ActionsBarContainer from '../actions-bar/container';
 import MediaContainer from '../media/container';
+import {GlobalProvider} from '../context/GlobalContext'
 
 const propTypes = {
   navbar: PropTypes.node,
@@ -58,13 +59,16 @@ const AppContainer = (props) => {
     ...otherProps
   } = props;
 
+
   return (
+    <GlobalProvider>
     <App
       navbar={navbar}
       actionsbar={actionsbar}
       media={media}
       {...otherProps}
     />
+    </GlobalProvider>
   );
 };
 

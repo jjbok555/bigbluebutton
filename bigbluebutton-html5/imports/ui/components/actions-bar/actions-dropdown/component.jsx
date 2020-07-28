@@ -13,6 +13,7 @@ import { withModalMounter } from '/imports/ui/components/modal/service';
 import withShortcutHelper from '/imports/ui/components/shortcut-help/service';
 import { styles } from '../styles';
 import ExternalVideoModal from '/imports/ui/components/external-video-player/modal/container';
+import {GlobalContext} from "../../context/GlobalContext";
 
 const propTypes = {
   amIPresenter: PropTypes.bool.isRequired,
@@ -86,6 +87,7 @@ class ActionsDropdown extends PureComponent {
 
     this.handlePresentationClick = this.handlePresentationClick.bind(this);
     this.handleExternalVideoClick = this.handleExternalVideoClick.bind(this);
+    this.handleHideVideo = this.handleHideVideo.bind(this);
   }
 
   componentWillUpdate(nextProps) {
@@ -173,6 +175,17 @@ class ActionsDropdown extends PureComponent {
           />
         )
         : null),
+      (amIPresenter && allowExternalVideo
+          ? (
+              <DropdownListItem
+                  icon="hand"
+                  label={!this.context.isHideVideo ? 'Hide' : 'Show'}
+                  description="External Video Hide"
+                  onClick={this.handleHideVideo()}
+              />
+
+          )
+          : null),
     ]);
   }
 
@@ -184,6 +197,11 @@ class ActionsDropdown extends PureComponent {
   handlePresentationClick() {
     const { mountModal } = this.props;
     mountModal(<PresentationUploaderContainer />);
+  }
+
+  handleHideVideo() {
+    this.context.setHideVideo(!this.context.isHideVideo);
+    console.log(this.context.isHideVideo);
   }
 
   render() {
@@ -230,5 +248,6 @@ class ActionsDropdown extends PureComponent {
 
 ActionsDropdown.propTypes = propTypes;
 ActionsDropdown.defaultProps = defaultProps;
+ActionsDropdown.contextType = GlobalContext;
 
 export default withShortcutHelper(withModalMounter(ActionsDropdown), 'openActions');
