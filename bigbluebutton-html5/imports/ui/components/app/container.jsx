@@ -59,7 +59,6 @@ const AppContainer = (props) => {
     ...otherProps
   } = props;
 
-
   return (
     <GlobalProvider>
     <App

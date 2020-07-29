@@ -44,7 +44,6 @@ class VideoPlayer extends Component {
       playing: false,
       autoPlayBlocked: false,
       playbackRate: 1,
-      hideIsTrue : false,
     };
 
     this.opts = {
@@ -84,7 +83,7 @@ class VideoPlayer extends Component {
       },
       preload: true,
     };
-    //this.hideIsTrue = false;
+
     this.registerVideoListeners = this.registerVideoListeners.bind(this);
     this.autoPlayBlockDetected = this.autoPlayBlockDetected.bind(this);
     this.clearVideoListeners = this.clearVideoListeners.bind(this);
@@ -101,7 +100,6 @@ class VideoPlayer extends Component {
       setTimeout(this.handleResize, 0);
     };
     this.onBeforeUnload = this.onBeforeUnload.bind(this);
-    this.youtubeHide = this.youtubeHide.bind(this);
   }
 
   componentDidMount() {
@@ -410,13 +408,6 @@ class VideoPlayer extends Component {
     this.handleFirstPlay();
   }
 
-  youtubeHide () {
-    console.log(this.state.hideIsTrue);
-    this.setState({
-      hideIsTrue : !this.state.hideIsTrue
-    });
-  }
-
   render() {
     const { videoUrl, intl } = this.props;
     const {
@@ -424,13 +415,11 @@ class VideoPlayer extends Component {
     } = this.state;
 
     return (
-      <div style={{display: (this.state.hideIsTrue? 'none':'block')}}
+      <div
         id="video-player"
         data-test="videoPlayer"
         ref={(ref) => { this.playerParent = ref; }}
       >
-        <p id="youtubeHide" style={{color:'white'}} onClick={this.youtubeHide} >{this.state.hideIsTrue ? 'Show' : 'Hide'}</p>
-
         {autoPlayBlocked
           ? (
             <p className={styles.autoPlayWarning}>
