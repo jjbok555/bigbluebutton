@@ -4,6 +4,7 @@ import cx from 'classnames';
 import WebcamDraggable from './webcam-draggable-overlay/component';
 
 import { styles } from './styles';
+import {GlobalContext} from "../context/GlobalContext";
 
 const propTypes = {
   children: PropTypes.element.isRequired,
@@ -31,6 +32,7 @@ const defaultProps = {
 
 
 export default class Media extends Component {
+  static contextType = GlobalContext;
   constructor(props) {
     super(props);
     this.refContainer = React.createRef();
@@ -85,26 +87,30 @@ export default class Media extends Component {
         className={cx(styles.container)}
         ref={this.refContainer}
       >
-        <div
-          className={!swapLayout ? contentClassName : overlayClassName}
-          style={{
-            maxHeight: usersVideo.length < 1 || (webcamPlacement === 'floating') ? '100%' : '80%',
-            minHeight: '20%',
-          }}
-        >
-          {children}
-        </div>
-        {usersVideo.length > 0 ? (
-          <WebcamDraggable
-            refMediaContainer={this.refContainer}
-            swapLayout={swapLayout}
-            singleWebcam={singleWebcam}
-            usersVideoLenght={usersVideo.length}
-            hideOverlay={hideOverlay}
-            disableVideo={disableVideo}
-            audioModalIsOpen={audioModalIsOpen}
-            usersVideo={usersVideo}
-          />
+        {
+          this.context.isHideVideo &&
+          (<div
+              className={!swapLayout ? contentClassName : overlayClassName}
+              style={{
+                maxHeight: usersVideo.length < 1 || (webcamPlacement === 'floating') ? '100%' : '80%',
+                minHeight: '20%',
+              }}
+          >
+            {children}
+          </div>
+          )
+        }
+        {usersVideo.length > 0 && this.context.isHideVideo? (
+            <WebcamDraggable
+                refMediaContainer={this.refContainer}
+                swapLayout={swapLayout}
+                singleWebcam={singleWebcam}
+                usersVideoLenght={usersVideo.length}
+                hideOverlay={hideOverlay}
+                disableVideo={disableVideo}
+                audioModalIsOpen={audioModalIsOpen}
+                usersVideo={usersVideo}
+            />
         ) : null}
       </div>
     );

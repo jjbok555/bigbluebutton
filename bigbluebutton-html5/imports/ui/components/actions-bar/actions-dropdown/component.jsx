@@ -78,6 +78,7 @@ const intlMessages = defineMessages({
 });
 
 class ActionsDropdown extends PureComponent {
+  static contextType = GlobalContext;
   constructor(props) {
     super(props);
 
@@ -181,7 +182,8 @@ class ActionsDropdown extends PureComponent {
                   icon="hand"
                   label={!this.context.isHideVideo ? 'Hide' : 'Show'}
                   description="External Video Hide"
-                  onClick={this.handleHideVideo()}
+                  key="null"
+                  onClick={this.handleHideVideo}
               />
 
           )
@@ -200,8 +202,9 @@ class ActionsDropdown extends PureComponent {
   }
 
   handleHideVideo() {
+    console.log("before value : " + this.context.isHideVideo);
     this.context.setHideVideo(!this.context.isHideVideo);
-    console.log(this.context.isHideVideo);
+    console.log("after value : " + this.context.isHideVideo);
   }
 
   render() {
@@ -248,6 +251,5 @@ class ActionsDropdown extends PureComponent {
 
 ActionsDropdown.propTypes = propTypes;
 ActionsDropdown.defaultProps = defaultProps;
-ActionsDropdown.contextType = GlobalContext;
 
 export default withShortcutHelper(withModalMounter(ActionsDropdown), 'openActions');

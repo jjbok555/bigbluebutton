@@ -284,13 +284,13 @@ class App extends Component {
     this.setState({
       hoverIsTrue : true
     });
-    console.log(this.state.hoverIsTrue);
+    //console.log(this.state.hoverIsTrue);
   }
   toggleDefault() {
     this.setState({
       hoverIsTrue : false
     });
-    console.log(this.state.hoverIsTrue);
+    //console.log(this.state.hoverIsTrue);
   }
 
   renderActionsBar() {
