@@ -176,7 +176,7 @@ class ActionsDropdown extends PureComponent {
           />
         )
         : null),
-      (amIPresenter && allowExternalVideo
+      (amIPresenter && allowExternalVideo && isSharingVideo
           ? (
               <DropdownListItem
                   icon="hand"

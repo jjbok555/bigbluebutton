@@ -7,8 +7,8 @@ public:
     listenOnlyMode: true
     forceListenOnly: false
     skipCheck: false
-    clientTitle: BigBlueButton
-    appName: BigBlueButton HTML5 Client
+    clientTitle: 5N LOOP
+    appName: 5N HTML5 Client
     bbbServerVersion: 2.2
     copyright: "©2020 BigBlueButton Inc."
     html5ClientBuild: HTML5_CLIENT_VERSION
@@ -118,20 +118,16 @@ public:
     cameraProfiles:
       - id: low
         name: Low quality
-        default: false
-        bitrate: 100
+        default: true
+        bitrate: 40
       - id: medium
         name: Medium quality
-        default: true
-        bitrate: 200
+        default: false
+        bitrate: 100
       - id: high
         name: High quality
         default: false
-        bitrate: 500
-      - id: hd
-        name: High definition
-        default: false
-        bitrate: 800
+        bitrate: 200
     enableScreensharing: true
     enableVideo: true
     enableVideoStats: false

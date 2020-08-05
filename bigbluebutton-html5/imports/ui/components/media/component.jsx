@@ -100,7 +100,7 @@ export default class Media extends Component {
           </div>
           )
         }
-        {usersVideo.length > 0 && this.context.isHideVideo? (
+        {usersVideo.length > 0 ? (
             <WebcamDraggable
                 refMediaContainer={this.refContainer}
                 swapLayout={swapLayout}
