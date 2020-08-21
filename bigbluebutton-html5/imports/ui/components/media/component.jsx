@@ -88,7 +88,7 @@ export default class Media extends Component {
         ref={this.refContainer}
       >
         {
-          this.context.isHideVideo &&
+          !this.context.isHideVideo &&
           (<div
               className={!swapLayout ? contentClassName : overlayClassName}
               style={{
