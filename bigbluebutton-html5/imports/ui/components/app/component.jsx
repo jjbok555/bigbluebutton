@@ -302,13 +302,14 @@ class App extends Component {
     if (!actionsbar) return null;
 
     return (
-      <section onMouseOver={this.toggleHover} onMouseLeave={this.toggleDefault}
+      <section /*onMouseOver={this.toggleHover} onMouseLeave={this.toggleDefault}*/
         className={styles.actionsbar}
         aria-label={intl.formatMessage(intlMessages.actionsBarLabel)}
         aria-hidden={this.shouldAriaHide()}
       >
         {
-          this.state.hoverIsTrue? actionsbar : null
+          //this.state.hoverIsTrue? actionsbar : null
+          actionsbar
         }
       </section>
     );
