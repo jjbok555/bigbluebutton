@@ -34,6 +34,32 @@ const {
 const TOKEN = '_';
 
 class VideoService {
+  static isUserPresenter(userId) {
+    const user = Users.findOne({ userId },
+      { fields: { presenter: 1 } });
+    return user ? user.presenter : false;
+  }
+
+  // Paginated streams: sort with following priority: local -> presenter -> alphabetic
+  static sortPaginatedStreams(s1, s2) {
+    if (VideoService.isUserPresenter(s1.userId) && !VideoService.isUserPresenter(s2.userId)) {
+      return -1;
+    } else if (VideoService.isUserPresenter(s2.userId) && !VideoService.isUserPresenter(s1.userId)) {
+      return 1;
+    } else {
+      return UserListService.sortUsersByName(s1, s2);
+    }
+  }
+
+  // Full mesh: sort with the following priority: local -> alphabetic
+  static sortMeshStreams(s1, s2) {
+    if (s1.userId === Auth.userID) {
+      return -1;
+    } else {
+      return UserListService.sortUsersByName(s1, s2);
+    }
+  }
+
   constructor() {
     this.defineProperties({
       isConnecting: false,
@@ -49,6 +75,9 @@ class VideoService {
     this.pageChangeLocked = false;
 
     this.numberOfDevices = 0;
+
+    this.record = null;
+    this.hackRecordViewer = null;
 
     this.updateNumberOfDevices = this.updateNumberOfDevices.bind(this);
     // Safari doesn't support ondevicechange
@@ -176,7 +205,7 @@ class VideoService {
 
   setNumberOfPages (numberOfPublishers, numberOfSubscribers, pageSize) {
     // Page size 0 means no pagination, return itself
-    if (pageSize === 0) return pageSize;
+    if (pageSize === 0) return 0;
 
     // Page size refers only to the number of subscribers. Publishers are always
     // shown, hence not accounted for
@@ -209,21 +238,31 @@ class VideoService {
   }
 
   calculateNextPage () {
+    if (this.numberOfPages === 0) {
+      return 0;
+    }
+
     return ((this.currentVideoPageIndex + 1) % this.numberOfPages + this.numberOfPages) % this.numberOfPages;
   }
 
   calculatePreviousPage () {
+    if (this.numberOfPages === 0) {
+      return 0;
+    }
+
     return ((this.currentVideoPageIndex - 1) % this.numberOfPages + this.numberOfPages) % this.numberOfPages;
   }
 
   getNextVideoPage() {
-    this.setCurrentVideoPageIndex(this.calculateNextPage());
+    const nextPage = this.calculateNextPage();
+    this.setCurrentVideoPageIndex(nextPage);
 
     return this.currentVideoPageIndex;
   }
 
   getPreviousVideoPage() {
-    this.setCurrentVideoPageIndex(this.calculatePreviousPage());
+    const previousPage = this.calculatePreviousPage();
+    this.setCurrentVideoPageIndex(previousPage);
 
     return this.currentVideoPageIndex;
   }
@@ -245,9 +284,13 @@ class VideoService {
     // Publishers are taken into account for the page size calculations. They
     // also appear on every page.
     const [mine, others] = _.partition(streams, (vs => { return Auth.userID === vs.userId; }));
+
     // Recalculate total number of pages
     this.setNumberOfPages(mine.length, others.length, pageSize);
-    const paginatedStreams = _.chunk(others, pageSize)[this.currentVideoPageIndex] || [];
+    const chunkIndex = this.currentVideoPageIndex * pageSize;
+    const paginatedStreams = others
+      .sort(VideoService.sortPaginatedStreams)
+      .slice(chunkIndex, (chunkIndex + pageSize)) || [];
     const streamsOnPage = [...mine, ...paginatedStreams];
 
     return streamsOnPage;
@@ -273,7 +316,7 @@ class VideoService {
       cameraId: vs.stream,
       userId: vs.userId,
       name: vs.name,
-    })).sort(UserListService.sortUsersByName);
+    }));
 
     const pageSize = this.getMyPageSize();
 
@@ -281,11 +324,14 @@ class VideoService {
     // is equivalent to disabling it), so return the mapped streams as they are
     // which produces the original non paginated behaviour
     if (!PAGINATION_ENABLED || pageSize === 0) {
-      return mappedStreams;
-    };
+      return {
+        streams: mappedStreams.sort(VideoService.sortMeshStreams),
+        totalNumberOfStreams: mappedStreams.length
+      };
+    }
 
     const paginatedStreams = this.getVideoPage(mappedStreams, pageSize);
-    return paginatedStreams;
+    return { streams: paginatedStreams, totalNumberOfStreams: mappedStreams.length };
   }
 
   getConnectingStream(streams) {
@@ -332,6 +378,31 @@ class VideoService {
   getMyRole () {
     return Users.findOne({ userId: Auth.userID },
       { fields: { role: 1 } }).role;
+  }
+
+  getRecord() {
+    if (this.record === null) {
+      this.record = getFromUserSettings('bbb_record_video', true);
+    }
+
+    // TODO: Remove this
+    // This is a hack to handle a missing piece at the backend of a particular deploy.
+    // If, at the time the video is shared, the user has a viewer role and
+    // meta_hack-record-viewer-video is 'false' this user won't have this video
+    // stream recorded.
+    if (this.hackRecordViewer === null) {
+      const prop = Meetings.findOne(
+        { meetingId: Auth.meetingID },
+        { fields: { 'metadataProp': 1 } },
+      ).metadataProp;
+
+      const value = prop.metadata ? prop.metadata['hack-record-viewer-video'] : null;
+      this.hackRecordViewer = value ? value.toLowerCase() === 'true' : true;
+    }
+
+    const hackRecord = this.getMyRole() === ROLE_MODERATOR || this.hackRecordViewer;
+
+    return this.record && hackRecord;
   }
 
   filterModeratorOnly(streams) {
@@ -669,6 +740,7 @@ export default {
   addCandidateToPeer: (peer, candidate, cameraId) => videoService.addCandidateToPeer(peer, candidate, cameraId),
   processInboundIceQueue: (peer, cameraId) => videoService.processInboundIceQueue(peer, cameraId),
   getRole: isLocal => videoService.getRole(isLocal),
+  getRecord: () => videoService.getRecord(),
   getSharedDevices: () => videoService.getSharedDevices(),
   getSkipVideoPreview: fromInterface => videoService.getSkipVideoPreview(fromInterface),
   getUserParameterProfile: () => videoService.getUserParameterProfile(),
