@@ -83,6 +83,17 @@ setHTML5ClientAsDefault() {
 }
 
 
+enableHTML5CameraQualityThresholds() {
+  echo "  - Enable HTML5 cameraQualityThresholds"
+  yq w -i $HTML5_CONFIG public.kurento.cameraQualityThresholds.enabled true
+}
+
+enableHTML5WebcamPagination() {
+  echo "  - Enable HTML5 webcam pagination"
+  yq w -i $HTML5_CONFIG public.kurento.pagination.enabled true
+}
+
+
 #
 # Enable firewall rules to open only 
 #
@@ -112,13 +123,12 @@ enableMultipleKurentos() {
 
   # Step 1.  Setup shared certificate between FreeSWITCH and Kurento
 
-  if [ ! -f /etc/kurento/dtls-srtp.pem ]; then
-    HOSTNAME=$(cat /etc/nginx/sites-available/bigbluebutton | grep -v '#' | sed -n '/server_name/{s/.*server_name[ ]*//;s/;//;p}' | cut -d' ' -f1 | head -n 1)
-    openssl req -x509 -new -nodes -newkey rsa:2048 -sha256 -days 3650 -subj "/C=BR/ST=Ottawa/O=BigBlueButton Inc./OU=Live/CN=$HOSTNAME" -keyout /tmp/dtls-srtp-key.pem -out /tmp/dtls-srtp-cert.pem
+  HOSTNAME=$(cat /etc/nginx/sites-available/bigbluebutton | grep -v '#' | sed -n '/server_name/{s/.*server_name[ ]*//;s/;//;p}' | cut -d' ' -f1 | head -n 1)
+  openssl req -x509 -new -nodes -newkey rsa:2048 -sha256 -days 3650 -subj "/C=BR/ST=Ottawa/O=BigBlueButton Inc./OU=Live/CN=$HOSTNAME" -keyout /tmp/dtls-srtp-key.pem -out /tmp/dtls-srtp-cert.pem
+  cat /tmp/dtls-srtp-key.pem /tmp/dtls-srtp-cert.pem > /etc/kurento/dtls-srtp.pem
+  cat /tmp/dtls-srtp-key.pem /tmp/dtls-srtp-cert.pem > /opt/freeswitch/etc/freeswitch/tls/dtls-srtp.pem
 
-    cat /tmp/dtls-srtp-key.pem /tmp/dtls-srtp-cert.pem > /etc/kurento/dtls-srtp.pem
-    cat /tmp/dtls-srtp-key.pem /tmp/dtls-srtp-cert.pem > /opt/freeswitch/etc/freeswitch/tls/dtls-srtp.pem
-  fi
+  sed -i 's/;pemCertificateRSA=.*/pemCertificateRSA=\/etc\/kurento\/dtls-srtp.pem/g' /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
 
   # Step 2.  Setup systemd unit files to launch three separate instances of Kurento
 
@@ -247,6 +257,9 @@ source /etc/bigbluebutton/bbb-conf/apply-lib.sh
 #enableHTML5ClientLog
 #setHTML5ClientAsDefault
 #enableUFWRules
+
+#enableHTML5CameraQualityThresholds
+#enableHTML5WebcamPagination
 
 HERE
 chmod +x /etc/bigbluebutton/bbb-conf/apply-config.sh
