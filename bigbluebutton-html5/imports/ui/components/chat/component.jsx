@@ -9,6 +9,7 @@ import { styles } from './styles.scss';
 import MessageForm from './message-form/container';
 import MessageList from './message-list/container';
 import ChatDropdown from './chat-dropdown/component';
+/*import FileUploader2 from "./file-uploader/component2";*/
 
 const ELEMENT_ID = 'chat-messages';
 
@@ -120,6 +121,8 @@ const Chat = (props) => {
         handleSendMessage={actions.handleSendMessage}
         partnerIsLoggedOut={partnerIsLoggedOut}
       />
+      {/*<FileUploader2 />*/}
+
     </div>
   );
 };

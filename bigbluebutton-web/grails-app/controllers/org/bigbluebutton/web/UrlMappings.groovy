@@ -109,6 +109,18 @@ class UrlMappings {
       action = [GET: 'index']
     }
 
+    "/bigbluebutton/fileUpload"(controller: "api") {
+      action = [POST: 'fileUpload']
+    }
+
+    "/bigbluebutton/fileDownload"(controller: "api") {
+      action = [POST: 'fileDownload']
+    }
+
+    "/bigbluebutton/getFileList"(controller: "api") {
+      action = [POST: 'getFileList']
+    }
+
     "500"(view: '/error')
   }
 }

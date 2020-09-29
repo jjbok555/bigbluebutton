@@ -40,8 +40,10 @@ import org.bigbluebutton.web.services.turn.TurnEntry
 import org.bigbluebutton.web.services.turn.StunServer
 import org.bigbluebutton.web.services.turn.RemoteIceCandidate
 import org.json.JSONArray
+import org.grails.web.mime.DefaultMimeUtility
 
 import javax.servlet.ServletRequest
+import java.nio.charset.StandardCharsets
 
 class ApiController {
   private static final Integer SESSION_TIMEOUT = 14400  // 4 hours
@@ -59,6 +61,7 @@ class ApiController {
   PresentationUrlDownloadService presDownloadService
   StunTurnService stunTurnService
   ResponseBuilder responseBuilder = initResponseBuilder()
+  DefaultMimeUtility grailsMimeUtility
 
   def initResponseBuilder = {
     String protocol = this.getClass().getResource("").getProtocol();
@@ -2252,4 +2255,111 @@ class ApiController {
     redirect(url: newUri)
   }
 
+  def fileUpload = {
+    String API_CALL = "fileUpload"
+    log.debug CONTROLLER_NAME + "#${API_CALL}"
+
+    def dir = params.dir
+    def file2 = params.file
+    def path = '/home/ubuntu/'+dir
+    def useDir = new File(path);
+    if(!useDir.exists()) {
+      useDir.mkdir()
+    };
+
+    def originFileName = file2.getOriginalFilename()
+    def result = ""
+    if(!StringUtils.isEmpty(originFileName)) {
+      File temp = new File(path, originFileName)
+      file2.transferTo(temp)
+      result = 'Success'
+    } else {
+      result = 'upload not file'
+    }
+
+    response.addHeader("Cache-Control", "no-cache")
+
+    withFormat {
+      xml {
+        // No need to use the response builder here until we have a more complex response
+        render(result, contentType: "text/xml")
+      }
+    }
+    return
+  }
+
+  def fileDownload = {
+    String API_CALL = "fileDownload"
+    log.debug CONTROLLER_NAME + "#${API_CALL}"
+
+    def name = params.name
+    def dir = params.dir
+    def path = '/home/ubuntu/'+dir+"/"+name
+
+    def result = ""
+    FileInputStream is = null;
+    try {
+      def file = new File(path);
+      if (file.exists() && file.isFile()) {
+        log.debug "ddddd"
+        def bytes = file.readBytes()
+        def responseName = file.getName();
+
+        response.setContentType("application/octet-stream; charset=utf-8");
+        response.setContentLength((int) file.length());
+        response.addHeader("content-disposition", "attachment; filename=" + URLEncoder.encode(responseName, StandardCharsets.UTF_8.name()))
+        response.setHeader("Content-Transfer-Encoding", "binary");
+        response.outputStream << bytes;
+
+      } else {
+        log.warn "$file does not exist."
+        response.status = 404
+      }
+    } catch (IOException e) {
+      log.error("Error read file.\n" + e.getMessage());
+      response.status = 404
+    }
+
+  }
+
+  def getFileList = {
+    String API_CALL = "getFileList"
+    log.debug CONTROLLER_NAME + "#${API_CALL}"
+
+    def dir = params.dir
+    def path = '/home/ubuntu/'+dir
+    def useDir = new File(path);
+    if(!useDir.exists()) {
+      useDir.mkdir()
+    };
+
+    File[] files = useDir.listFiles();
+    int len = files.length;
+    List<String> list = new ArrayList<>();
+
+    Gson gson = new Gson();
+    List<Map<String, Object>> resultList = new ArrayList<>();
+    for (int i =0; i< len; i++) {
+      Map<String, Object> logData = new HashMap<String, Object>();
+      logData.put("id", files[i].getName());
+      logData.put("filename", files[i].getName());
+      logData.put("upload", "");
+      resultList.add(logData);
+    }
+    log.info(" --analytics-- data=" + gson.toJson(resultList));
+    response.addHeader("Cache-Control", "no-cache")
+
+    withFormat {
+        // No need to use the response builder here until we have a more complex response
+      json {
+        def builder = new JsonBuilder()
+        builder.response {
+          returncode RESP_CODE_SUCCESS
+          message gson.toJson(resultList)
+        }
+        render(contentType: "application/json", text: builder.toPrettyString())
+      }
+    }
+    return
+  }
 }
