@@ -4,9 +4,11 @@ import cx from 'classnames';
 import TextareaAutosize from 'react-autosize-textarea';
 import browser from 'browser-detect';
 import PropTypes from 'prop-types';
+import { post } from 'axios';
 import TypingIndicatorContainer from './typing-indicator/container';
 import { styles } from './styles.scss';
 import Button from '../../button/component';
+import Icon from '/imports/ui/components/icon/component';
 
 const propTypes = {
   intl: intlShape.isRequired,
@@ -73,10 +75,20 @@ class MessageForm extends PureComponent {
   constructor(props) {
     super(props);
 
+    const myStorage = window.sessionStorage;
+    let item = myStorage.getItem("BBB_logoutURL").split("/");
+    if(item.length>2){
+      item = item[item.length-2];
+    } else {
+      item = null
+    }
+    const exts = "image/*, .txt, .pdf, .doc, .docx, application/msword";
     this.state = {
       message: '',
       error: null,
       hasErrors: false,
+      roomUid: item,
+      exts: exts,
     };
 
     this.BROWSER_RESULTS = browser();
@@ -85,6 +97,7 @@ class MessageForm extends PureComponent {
     this.handleMessageKeyDown = this.handleMessageKeyDown.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.setMessageHint = this.setMessageHint.bind(this);
+    this.onChangeFile = this.onChangeFile.bind(this);
   }
 
   componentDidMount() {
@@ -258,6 +271,46 @@ class MessageForm extends PureComponent {
     );
   }
 
+  onChangeFile(e) {
+
+    const {
+      handleSendMessage,
+    } = this.props;
+    const {
+      roomUid,
+    } = this.state;
+    let ufile = e.target.files;
+    if(ufile.length > 0) {
+      let fsize = ufile[0].size;
+      if(fsize > 20500000) {
+        alert("20M 넘는 파일은 등록 할 수 없습니다.");
+        return;
+      }
+
+      const url = '/bigbluebutton/fileUpload'
+      const formData = new FormData();
+      formData.append('file', ufile[0]);
+      formData.append('dir', roomUid);
+      const config = {
+        headers: {
+          'content-type': 'multipart/form-data',
+        },
+      };
+      post(url, formData, config).then((res) => {
+        let item = JSON.parse(res.data.response.message);
+        if(item.result ==='Success') {
+          const ahref = `https://${window.location.hostname}/bigbluebutton/fileDownload?dir=${roomUid}&name=${item.fileName}`;
+          const msg = `<a href="${encodeURI(ahref)}" style="cursor:pointer; background-color: #f2f2f2; font-weight: bold" onclick="window.open(this.href); return false;" >${ufile[0].name}</a>`;
+          handleSendMessage("file ^ "+msg);
+          document.getElementById("fileUploadSam").value='';
+        } else {
+          alert("업로드 실패");
+          document.getElementById("fileUploadSam").value='';
+        }
+      })
+    }
+  }
+
   render() {
     const {
       intl,
@@ -268,7 +321,7 @@ class MessageForm extends PureComponent {
       chatAreaId,
     } = this.props;
 
-    const { hasErrors, error, message } = this.state;
+    const { hasErrors, error, message, exts } = this.state;
 
     return CHAT_ENABLED ? (
       <form
@@ -307,6 +360,8 @@ class MessageForm extends PureComponent {
             onClick={() => {}}
             data-test="sendMessageButton"
           />
+          <label htmlFor="fileUploadSam"><Icon iconName="file" title="파일 업로드" style={{ cursor: 'pointer', marginLeft: '4px', fontSize: '32px', marginTop: '4px'}}/></label>
+          <input type="file" id="fileUploadSam" accept={exts} style={{display: 'none'}} onChange={this.onChangeFile}/>
         </div>
         <TypingIndicatorContainer {...{ error }} />
       </form>

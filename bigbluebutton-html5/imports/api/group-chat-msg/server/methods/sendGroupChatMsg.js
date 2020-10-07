@@ -15,6 +15,12 @@ const parseMessage = (message) => {
   let parsedMessage = message || '';
   parsedMessage = parsedMessage.trim();
 
+  if(parsedMessage.indexOf('file ^ ') > -1) {
+    let msg = parsedMessage.split('^')[1].trim();
+    parsedMessage = msg;
+    return parsedMessage;
+  }
+
   // Replace <br/> with \n\r
   parsedMessage = parsedMessage.replace(/<br\s*[\\/]?>/gi, '\n\r');
 

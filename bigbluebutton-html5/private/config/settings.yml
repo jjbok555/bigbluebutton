@@ -166,11 +166,11 @@ public:
       - id: low
         name: Low
         default: true
-        bitrate: 40
+        bitrate: 70
       - id: medium
         name: Medium
         default: false
-        bitrate: 100
+        bitrate: 130
       - id: high
         name: High
         default: false

@@ -44,6 +44,7 @@ import org.grails.web.mime.DefaultMimeUtility
 
 import javax.servlet.ServletRequest
 import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 
 class ApiController {
   private static final Integer SESSION_TIMEOUT = 14400  // 4 hours
@@ -2259,18 +2260,25 @@ class ApiController {
     String API_CALL = "fileUpload"
     log.debug CONTROLLER_NAME + "#${API_CALL}"
 
-    def dir = params.dir
+    String dir = params.dir
     def file2 = params.file
-    def path = '/home/ubuntu/'+dir
+    dir = getSecuFileName(dir);
+    def path = '/home/ubuntu/temp/'+dir
     def useDir = new File(path);
     if(!useDir.exists()) {
       useDir.mkdir()
-    };
+    }
 
-    def originFileName = file2.getOriginalFilename()
+    String originFileName = file2.getOriginalFilename();
+    MessageDigest sha1 = MessageDigest.getInstance("SHA1");
+    byte[] digest  = sha1.digest(originFileName.getBytes());
+    def fileNm = new BigInteger(1, digest).toString(16)
+    StringBuilder sb = new StringBuilder();
+    sb.append(fileNm).append("^").append(originFileName);
+
     def result = ""
     if(!StringUtils.isEmpty(originFileName)) {
-      File temp = new File(path, originFileName)
+      File temp = new File(path, sb.toString())
       file2.transferTo(temp)
       result = 'Success'
     } else {
@@ -2279,10 +2287,19 @@ class ApiController {
 
     response.addHeader("Cache-Control", "no-cache")
 
+    Gson gson = new Gson();
+    Map<String, Object> logData = new HashMap<String, Object>();
+    logData.put("result", result);
+    logData.put("fileName", fileNm);
+
     withFormat {
-      xml {
-        // No need to use the response builder here until we have a more complex response
-        render(result, contentType: "text/xml")
+      json {
+        def builder = new JsonBuilder()
+        builder.response {
+          returncode RESP_CODE_SUCCESS
+          message gson.toJson(logData)
+        }
+        render(contentType: "application/json", text: builder.toPrettyString())
       }
     }
     return
@@ -2294,20 +2311,34 @@ class ApiController {
 
     def name = params.name
     def dir = params.dir
-    def path = '/home/ubuntu/'+dir+"/"+name
 
-    def result = ""
-    FileInputStream is = null;
+    dir = getSecuFileName(dir);
+    name = getSecuFileName(name);
+    def dirPath = '/home/ubuntu/temp/'+dir;
+    File f = new File(dirPath);
+    File[] listFiles = f.listFiles();
+    int len = 0;
+    if(listFiles) {
+      len = listFiles.length;
+    }
+    def file
+    for (int i = 0; i < len; i++) {
+      if(listFiles[i].getName().indexOf(name) > -1) {
+        file = listFiles[i];
+        break;
+      }
+    }
+
     try {
-      def file = new File(path);
-      if (file.exists() && file.isFile()) {
-        log.debug "ddddd"
+      if (file && file.exists() && file.isFile()) {
         def bytes = file.readBytes()
-        def responseName = file.getName();
-
+        def responseName = file.getName().split("\\^")[1];
+        def fileName = URLEncoder.encode(responseName, StandardCharsets.UTF_8.name());
+        fileName = fileName.replaceAll("\\+", "%20");
         response.setContentType("application/octet-stream; charset=utf-8");
         response.setContentLength((int) file.length());
-        response.addHeader("content-disposition", "attachment; filename=" + URLEncoder.encode(responseName, StandardCharsets.UTF_8.name()))
+
+        response.addHeader("content-disposition", "attachment; filename=" + fileName);
         response.setHeader("Content-Transfer-Encoding", "binary");
         response.outputStream << bytes;
 
@@ -2322,7 +2353,7 @@ class ApiController {
 
   }
 
-  def getFileList = {
+  /*def getFileList = {
     String API_CALL = "getFileList"
     log.debug CONTROLLER_NAME + "#${API_CALL}"
 
@@ -2361,5 +2392,40 @@ class ApiController {
       }
     }
     return
+  }*/
+
+  def delRoomDir = {
+    String API_CALL = "delRoomDir"
+    log.debug CONTROLLER_NAME + "#${API_CALL}"
+
+    String dir = params.dir
+    dir = getSecuFileName(dir);
+    def path = '/home/ubuntu/temp/'+dir
+    def useDir = new File(path);
+    File[] files = useDir.listFiles();
+    int len = files.length;
+
+    for (int i=0;i<len;i++) {
+      files[i].delete();
+    }
+
+    log.debug "삭제 완료 : ".concat(String.valueOf(len));
+
+    withFormat {
+      xml {
+        // No need to use the response builder here until we have a more complex response
+        render(RESP_CODE_SUCCESS, contentType: "text/xml")
+      }
+    }
+    return
   }
+
+  private String getSecuFileName (String name) {
+    String fileNm = name.replaceAll("/", "");
+    fileNm = fileNm.replaceAll("\\\\","");
+    fileNm = fileNm.replaceAll("\\.", "");
+    fileNm = fileNm.replaceAll("&", "");
+    return fileNm;
+  }
+
 }

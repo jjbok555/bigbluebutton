@@ -114,11 +114,15 @@ class UrlMappings {
     }
 
     "/bigbluebutton/fileDownload"(controller: "api") {
-      action = [POST: 'fileDownload']
+      action = [GET: 'fileDownload']
     }
 
-    "/bigbluebutton/getFileList"(controller: "api") {
+    /*"/bigbluebutton/getFileList"(controller: "api") {
       action = [POST: 'getFileList']
+    }*/
+
+    "/bigbluebutton/delRoomDir"(controller: "api") {
+      action = [GET: 'delRoomDir']
     }
 
     "500"(view: '/error')
