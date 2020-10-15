@@ -98,6 +98,7 @@ class MessageForm extends PureComponent {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.setMessageHint = this.setMessageHint.bind(this);
     this.onChangeFile = this.onChangeFile.bind(this);
+    this.fileClick = this.fileClick.bind(this);
   }
 
   componentDidMount() {
@@ -271,6 +272,11 @@ class MessageForm extends PureComponent {
     );
   }
 
+  fileClick(e) {
+    e.preventDefault();
+    document.getElementById('fileUploadSam').click();
+  }
+
   onChangeFile(e) {
 
     const {
@@ -359,8 +365,18 @@ class MessageForm extends PureComponent {
             icon="send"
             onClick={() => {}}
             data-test="sendMessageButton"
+            style={{ marginLeft: '7px'}}
           />
-          <label htmlFor="fileUploadSam"><Icon iconName="file" title="파일 업로드" style={{ cursor: 'pointer', marginLeft: '4px', fontSize: '32px', marginTop: '4px'}}/></label>
+          <Button
+              hideLabel
+              circle
+              className={styles.sendButton}
+              label={"파일 업로드"}
+              color="primary"
+              onClick={this.fileClick}
+              icon="file"
+              style={{ marginLeft: '7px'}}
+          />
           <input type="file" id="fileUploadSam" accept={exts} style={{display: 'none'}} onChange={this.onChangeFile}/>
         </div>
         <TypingIndicatorContainer {...{ error }} />

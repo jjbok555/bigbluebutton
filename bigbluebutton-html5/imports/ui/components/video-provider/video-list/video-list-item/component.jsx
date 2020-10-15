@@ -179,7 +179,7 @@ class VideoListItem extends Component {
             autoPlay
             playsInline
           />
-          {/*{videoIsReady && this.renderFullscreenButton()}*/}
+          {videoIsReady && this.renderFullscreenButton()}
         </div>
         { videoIsReady &&
           <div className={styles.info}>

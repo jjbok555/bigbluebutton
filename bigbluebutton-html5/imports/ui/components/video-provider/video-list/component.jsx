@@ -222,15 +222,17 @@ class VideoList extends Component {
 
     return (
       <Button
+        circle
         role="button"
         aria-label={nextPageLabel}
         color="primary"
         icon="right_arrow"
-        size="md"
+        size="lg"
         onClick={VideoService.getNextVideoPage}
         label={nextPageDetailedLabel}
         hideLabel
         className={cx(styles.nextPage)}
+        style={{marginLeft: '10px'}}
       />
     );
   }
@@ -246,15 +248,17 @@ class VideoList extends Component {
 
     return (
       <Button
+        circle
         role="button"
         aria-label={prevPageLabel}
         color="primary"
         icon="left_arrow"
-        size="md"
+        size="lg"
         onClick={VideoService.getPreviousVideoPage}
         label={prevPageDetailedLabel}
         hideLabel
         className={cx(styles.previousPage)}
+        style={{marginRight: '38px', marginLeft: '3px'}}
       />
     );
   }
