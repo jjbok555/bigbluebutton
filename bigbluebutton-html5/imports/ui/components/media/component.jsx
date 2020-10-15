@@ -5,7 +5,6 @@ import Settings from '/imports/ui/services/settings';
 import WebcamDraggable from './webcam-draggable-overlay/component';
 
 import { styles } from './styles';
-import {GlobalContext} from "../context/GlobalContext";
 
 const propTypes = {
   children: PropTypes.element.isRequired,
@@ -29,7 +28,6 @@ const defaultProps = {
 
 
 export default class Media extends Component {
-  static contextType = GlobalContext;
   constructor(props) {
     super(props);
     this.refContainer = React.createRef();
@@ -62,7 +60,8 @@ export default class Media extends Component {
     });
 
     const { viewParticipantsWebcams } = Settings.dataSaving;
-    const fullHeight = usersVideo.length < 1 || (webcamPlacement === 'floating') || !viewParticipantsWebcams;
+    const showVideo = usersVideo.length > 0 && viewParticipantsWebcams;
+    const fullHeight = !showVideo || (webcamPlacement === 'floating');
 
     return (
       <div
@@ -83,7 +82,7 @@ export default class Media extends Component {
           </div>
           )
         }
-        {usersVideo.length > 0 ? (
+        {showVideo ? (
           <WebcamDraggable
             refMediaContainer={this.refContainer}
             swapLayout={swapLayout}
